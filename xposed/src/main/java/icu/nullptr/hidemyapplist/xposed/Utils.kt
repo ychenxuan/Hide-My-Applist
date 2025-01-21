@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo
 import android.os.Binder
 import android.os.Build
 import com.android.apksig.ApkVerifier
+import com.github.kyuubiran.ezxhelper.utils.findField
 import com.github.kyuubiran.ezxhelper.utils.invokeMethodAutoAs
 import de.robv.android.xposed.XposedHelpers
 import icu.nullptr.hidemyapplist.Magic
@@ -54,10 +55,12 @@ object Utils {
         return result
     }
 
-    fun getPackageNameFromPackageSettings(packageSettings: Any): String {
-        return with(packageSettings.toString()) {
-            substring(lastIndexOf(' ') + 1, lastIndexOf('/'))
-        }
+    fun getPackageNameFromPackageSettings(packageSettings: Any): String? {
+        return runCatching {
+            findField(packageSettings::class.java, true) {
+                name == if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) "mName" else "name"
+            }.get(packageSettings) as? String
+        }.getOrNull()
     }
 
     fun getInstalledApplicationsCompat(pms: IPackageManager, flags: Long, userId: Int): List<ApplicationInfo> {

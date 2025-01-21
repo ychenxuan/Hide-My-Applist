@@ -50,15 +50,28 @@ class HMAService(val pms: IPackageManager) : IHMAService.Stub() {
     }
 
     private fun searchDataDir() {
-        File("/data/misc/hide_my_applist").deleteRecursively()
         File("/data/system").list()?.forEach {
             if (it.startsWith("hide_my_applist")) {
-                if (this::dataDir.isInitialized) File("/data/system/$it").deleteRecursively()
-                else dataDir = "/data/system/$it"
+                if (!this::dataDir.isInitialized) {
+                    val newDir = File("/data/misc/$it")
+                    File("/data/system/$it").renameTo(newDir)
+                    dataDir = newDir.path
+                } else {
+                    File("/data/system/$it").deleteRecursively()
+                }
+            }
+        }
+        File("/data/misc").list()?.forEach {
+            if (it.startsWith("hide_my_applist")) {
+                if (!this::dataDir.isInitialized) {
+                    dataDir = "/data/misc/$it"
+                } else if (dataDir != "/data/misc/$it") {
+                    File("/data/misc/$it").deleteRecursively()
+                }
             }
         }
         if (!this::dataDir.isInitialized) {
-            dataDir = "/data/system/hide_my_applist_" + Utils.generateRandomString(16)
+            dataDir = "/data/misc/hide_my_applist_" + Utils.generateRandomString(16)
         }
 
         File("$dataDir/log").mkdirs()
@@ -129,7 +142,7 @@ class HMAService(val pms: IPackageManager) : IHMAService.Stub() {
         if (caller == null || query == null) return false
         if (caller in Constants.packagesShouldNotHide || query in Constants.packagesShouldNotHide) return false
         if ((caller == Constants.GMS_PACKAGE_NAME || caller == Constants.GSF_PACKAGE_NAME) && query == Constants.APP_PACKAGE_NAME) return false // If apply hide on gms, hma app will crash 😓
-        if (caller in query) return false
+        if (caller == query) return false
         val appConfig = config.scope[caller] ?: return false
         if (appConfig.useWhitelist && appConfig.excludeSystemApps && query in systemApps) return false
 

@@ -115,7 +115,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings), PreferenceFragmen
             findPreference<SwitchPreference>("appDataIsolation")?.let {
                 it.setOnPreferenceChangeListener { _, newValue ->
                     val value = if (newValue as Boolean) 1 else 0
-                    val result = SuUtils.execPrivileged("resetprop ${Constants.ANDROID_APP_DATA_ISOLATION_ENABLED_PROPERTY} $value")
+                    val result = SuUtils.execPrivileged("setprop ${Constants.ANDROID_APP_DATA_ISOLATION_ENABLED_PROPERTY} $value")
                     if (result) makeToast(R.string.settings_need_reboot)
                     else makeToast(R.string.settings_permission_denied)
                     it.isChecked = CommonUtils.isAppDataIsolationEnabled
@@ -126,7 +126,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings), PreferenceFragmen
             findPreference<SwitchPreference>("voldAppDataIsolation")?.let {
                 it.setOnPreferenceChangeListener { _, newValue ->
                     val value = if (newValue as Boolean) 1 else 0
-                    val result = SuUtils.execPrivileged("resetprop ${Constants.ANDROID_VOLD_APP_DATA_ISOLATION_ENABLED_PROPERTY} $value")
+                    val result = SuUtils.execPrivileged("setprop ${Constants.ANDROID_VOLD_APP_DATA_ISOLATION_ENABLED_PROPERTY} $value")
                     if (result) makeToast(R.string.settings_need_reboot)
                     else makeToast(R.string.settings_permission_denied)
                     it.isChecked = CommonUtils.isVoldAppDataIsolationEnabled
@@ -250,7 +250,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings), PreferenceFragmen
                     .setTitle(R.string.settings_force_clean_env)
                     .setMessage(R.string.settings_is_clean_env_summary)
                     .setPositiveButton(android.R.string.ok) { _, _ ->
-                        val result = SuUtils.execPrivileged("rm -rf /data/system/hide_my_applist*")
+                        val result = SuUtils.execPrivileged("rm -rf /data/misc/hide_my_applist*")
                         if (result) makeToast(R.string.settings_force_clean_env_toast_successful)
                         else makeToast(R.string.settings_permission_denied)
                     }
